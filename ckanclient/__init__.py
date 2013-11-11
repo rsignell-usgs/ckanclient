@@ -3,7 +3,7 @@ __description__ = 'Python client for the CKAN API.'
 __long_description__ = \
 '''The CKAN client software may be used to make requests on the Comprehensive
 Knowledge Archive Network (CKAN) API including its REST interface to all
-primary objects (packages, groups, tags) and its search interface.
+primary objects (datasets, groups, tags) and its search interface.
 '''
 __license__ = 'MIT'
 
@@ -87,13 +87,13 @@ class CkanClient(object):
         'Base': '',
         'Changeset Register': '/rest/changeset',
         'Changeset Entity': '/rest/changeset',
-        'Package Register': '/rest/package',
-        'Package Entity': '/rest/package',
+        'Dataset Register': '/rest/dataset',
+        'Dataset Entity': '/rest/dataset',
         'Tag Register': '/rest/tag',
         'Tag Entity': '/rest/tag',
         'Group Register': '/rest/group',
         'Group Entity': '/rest/group',
-        'Package Search': '/search/package'
+        'Dataset Search': '/search/dataset'
     }
 
     def __init__(self, base_location=None, api_key=None, is_verbose=False,
@@ -237,82 +237,82 @@ class CkanClient(object):
     # Model API
     #
 
-    def package_register_get(self):
+    def dataset_register_get(self):
         self.reset()
-        url = self.get_location('Package Register')
+        url = self.get_location('Dataset Register')
         self.open_url(url)
         return self.last_message
 
-    def package_register_post(self, package_dict):
+    def dataset_register_post(self, dataset_dict):
         self.reset()
-        url = self.get_location('Package Register')
-        data = self._dumpstr(package_dict)
+        url = self.get_location('Dataset Register')
+        data = self._dumpstr(dataset_dict)
         self.open_url(url, data)
         return self.last_message
 
-    def package_entity_get(self, package_name):
+    def dataset_entity_get(self, dataset_name):
         self.reset()
-        url = self.get_location('Package Entity', package_name)
+        url = self.get_location('Dataset Entity', dataset_name)
         self.open_url(url)
         return self.last_message
 
-    def package_entity_put(self, package_dict, package_name=None):
-        # You only need to specify the current package_name if you
-        # are giving it a new package_name in the package_dict.
+    def dataset_entity_put(self, dataset_dict, dataset_name=None):
+        # You only need to specify the current dataset_name if you
+        # are giving it a new dataset_name in the dataset_dict.
         self.reset()
-        if not package_name:
-            package_name = package_dict['name']
-        url = self.get_location('Package Entity', package_name)
-        data = self._dumpstr(package_dict)
+        if not dataset_name:
+            dataset_name = dataset_dict['name']
+        url = self.get_location('Dataset Entity', dataset_name)
+        data = self._dumpstr(dataset_dict)
         self.open_url(url, data, method='PUT')
         return self.last_message
 
-    def package_entity_delete(self, package_name):
+    def dataset_entity_delete(self, dataset_name):
         self.reset()
-        url = self.get_location('Package Register', package_name)
+        url = self.get_location('Dataset Register', dataset_name)
         self.open_url(url, method='DELETE')
         return self.last_message
 
-    def package_relationship_register_get(self, package_name,
+    def dataset_relationship_register_get(self, dataset_name,
                 relationship_type='relationships', 
-                relationship_with_package_name=None):
+                relationship_with_dataset_name=None):
         self.reset()
-        url = self.get_location('Package Entity',
-           entity_id=package_name,
+        url = self.get_location('Dataset Entity',
+           entity_id=dataset_name,
            subregister=relationship_type,
-           entity2_id=relationship_with_package_name)
+           entity2_id=relationship_with_dataset_name)
         self.open_url(url)
         return self.last_message
 
-    def package_relationship_entity_post(self, subject_package_name,
-                relationship_type, object_package_name, comment=u''):
+    def dataset_relationship_entity_post(self, subject_dataset_name,
+                relationship_type, object_dataset_name, comment=u''):
         self.reset()
-        url = self.get_location('Package Entity',
-            entity_id=subject_package_name,
+        url = self.get_location('Dataset Entity',
+            entity_id=subject_dataset_name,
             subregister=relationship_type,
-            entity2_id=object_package_name)
+            entity2_id=object_dataset_name)
         data = self._dumpstr({'comment':comment})
         self.open_url(url, data, method='POST')
         return self.last_message
 
-    def package_relationship_entity_put(self, subject_package_name,
-                relationship_type, object_package_name, comment=u''):
+    def dataset_relationship_entity_put(self, subject_dataset_name,
+                relationship_type, object_dataset_name, comment=u''):
         self.reset()
-        url = self.get_location('Package Entity',
-            entity_id=subject_package_name,
+        url = self.get_location('Dataset Entity',
+            entity_id=subject_dataset_name,
             subregister=relationship_type,
-            entity2_id=object_package_name)
+            entity2_id=object_dataset_name)
         data = self._dumpstr({'comment':comment})
         self.open_url(url, data, method='PUT')
         return self.last_message
 
-    def package_relationship_entity_delete(self, subject_package_name,
-                relationship_type, object_package_name):
+    def dataset_relationship_entity_delete(self, subject_dataset_name,
+                relationship_type, object_dataset_name):
         self.reset()
-        url = self.get_location('Package Entity',
-            entity_id=subject_package_name,
+        url = self.get_location('Dataset Entity',
+            entity_id=subject_dataset_name,
             subregister=relationship_type,
-            entity2_id=object_package_name)
+            entity2_id=object_dataset_name)
         self.open_url(url, method='DELETE')
         return self.last_message
 
@@ -362,10 +362,10 @@ class CkanClient(object):
     # Search API
     #
 
-    def package_search(self, q, search_options=None):
+    def dataset_search(self, q, search_options=None):
         self.reset()
         search_options = search_options.copy() if search_options else {}
-        url = self.get_location('Package Search')
+        url = self.get_location('Dataset Search')
         search_options['q'] = q
         if not search_options.get('limit'):
             search_options['limit'] = PAGE_SIZE
@@ -373,7 +373,7 @@ class CkanClient(object):
         self.open_url(url, data)
         result_dict = self.last_message
         if not search_options.get('offset'):
-            result_dict['results'] = self._result_generator(result_dict['count'], result_dict['results'], self.package_search, q, search_options)
+            result_dict['results'] = self._result_generator(result_dict['count'], result_dict['results'], self.dataset_search, q, search_options)
         return result_dict
 
     def _result_generator(self, count, results, func, q, search_options):
@@ -458,11 +458,11 @@ class CkanClient(object):
         self.open_action_url(url, kwargs)
         return self.last_result
 
-    def package_list(self):
-        return self.action('package_list')
+    def dataset_list(self):
+        return self.action('dataset_list')
         
-    def package_show(self, package_id):
-        return self.action('package_show', id=package_id)
+    def dataset_show(self, dataset_id):
+        return self.action('dataset_show', id=dataset_id)
 
     def status_show(self):
         return self.action('status_show')
@@ -589,24 +589,24 @@ class CkanClient(object):
         else:
             return '', body
 
-    def add_package_resource (self, package_name, file_path_or_url, **kwargs):
-        '''Add a file or URL to a dataset (package) as a resource.
+    def add_dataset_resource (self, dataset_name, file_path_or_url, **kwargs):
+        '''Add a file or URL to a dataset (dataset) as a resource.
 
         If the resource is a local file then the CKAN instance must have file
         storage enabled. The file will be uploaded to the CKAN server.
 
-        A dictionary representing the resource is constructed. The package is
-        fetched from the server and the dictionary is appended to the package's
-        list of resources. The modified package is put back on the server.
+        A dictionary representing the resource is constructed. The dataset is
+        fetched from the server and the dictionary is appended to the dataset's
+        list of resources. The modified dataset is put back on the server.
         examples:
 
-        >>> client.add_package_resource('mypkg', '/path/to/local/file',
+        >>> client.add_dataset_resource('mypkg', '/path/to/local/file',
                 resource_type='data', description='...')
-        >>> client.add_package_resource('mypkg', 'http://example.org/foo.txt',
+        >>> client.add_dataset_resource('mypkg', 'http://example.org/foo.txt',
                 name='Foo', resource_type='metadata', format='csv')
 
-        :param package_name: the name of the dataset (package) to upload to
-        :type package_name: string
+        :param dataset_name: the name of the dataset (dataset) to upload to
+        :type dataset_name: string
         :param file_path_or_url: local filesystem path or URL of the file to
             add
         :type file_path_or_url: string
@@ -649,9 +649,9 @@ class CkanClient(object):
         r.update(kwargs)
         if not r.has_key('name'): r['name'] = url
 
-        p = self.package_entity_get(package_name)
+        p = self.dataset_entity_get(dataset_name)
         p['resources'].append(r)
-        return self.package_entity_put(p)
+        return self.dataset_entity_put(p)
 
     def _get_api_key_from_config(self):
         parsed = urlparse.urlparse(self.base_location)

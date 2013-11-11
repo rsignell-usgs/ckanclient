@@ -51,7 +51,7 @@ class GoogleSpreadsheetReader(object):
 
 class CkanLoader(object):
     """
-    Directs a CKAN service client to put obtained packages on CKAN.
+    Directs a CKAN service client to put obtained datasets on CKAN.
     """
     
     usage  = '''usage: %prog OPTIONS'''
@@ -78,12 +78,12 @@ class CkanLoader(object):
             '--no-create-confirmation',
             dest='no_create_confimation',
             action='store_true',
-            help="""Don't prompt for confirmation when registering a new package.""")
+            help="""Don't prompt for confirmation when registering a new dataset.""")
         parser.add_option(
             '--no-update-confirmation',
             dest='no_update_confimation',
             action='store_true',
-            help="""Don't prompt for confirmation when updating a registered package.""")
+            help="""Don't prompt for confirmation when updating a registered dataset.""")
 
     def init_ckanclient(self):
         """Init the CKAN client from options."""
@@ -97,47 +97,47 @@ class CkanLoader(object):
         )
 
     def run(self):
-        """Obtain packages and put them on CKAN."""
+        """Obtain datasets and put them on CKAN."""
         try:
-            self.packages = []
-            self.obtain_packages()
-            print "Putting %s packages on CKAN running at %s" % (len(self.packages), self.options.ckan_api_location)
-            self.put_packages_on_ckan()
+            self.datasets = []
+            self.obtain_datasets()
+            print "Putting %s datasets on CKAN running at %s" % (len(self.datasets), self.options.ckan_api_location)
+            self.put_datasets_on_ckan()
         except KeyboardInterrupt:
             print ""
             print "exiting..."
             print ""
 
-    def obtain_packages(self):
-        """Abstract method for obtaining packages."""
+    def obtain_datasets(self):
+        """Abstract method for obtaining datasets."""
         raise Exception, "Abstract method not implemented."
 
-    def put_packages_on_ckan(self):
-        """Uses CKAN client to register (or update) obtained packages."""
+    def put_datasets_on_ckan(self):
+        """Uses CKAN client to register (or update) obtained datasets."""
         # Todo: Fix ckan or ckanclient, so this method isn't so long-winded.
         print ""
         sleep(1)
-        for package in self.packages:
+        for dataset in self.datasets:
             try:
-                registered_package = self.ckanclient.package_entity_get(package['name'])
+                registered_dataset = self.ckanclient.dataset_entity_get(dataset['name'])
             except CkanApiError:
                 pass
             if self.ckanclient.last_status == 200:
-                print "Package '%s' is already registered" % package['name']
+                print "Dataset '%s' is already registered" % dataset['name']
                 print ""
-                pprint.pprint(package)
+                pprint.pprint(dataset)
                 print ""
                 if not self.options.no_update_confimation:
-                    answer = raw_input("Do you want to update this package with CKAN now? [y/N] ")
+                    answer = raw_input("Do you want to update this dataset with CKAN now? [y/N] ")
                     if not answer or answer.lower()[0] != 'y':
-                        print "Skipping '%s' package..." % package['name']
+                        print "Skipping '%s' dataset..." % dataset['name']
                         print ""
                         sleep(1)
                         continue
-                print "Updating package..."
-                self.ckanclient.package_entity_put(package)
+                print "Updating dataset..."
+                self.ckanclient.dataset_entity_put(dataset)
                 if self.ckanclient.last_status == 200:
-                    print "Updated package '%s' OK." % package['name']
+                    print "Updated dataset '%s' OK." % dataset['name']
                     sleep(1)
                 elif self.ckanclient.last_status == 403 or '403' in str(self.ckanclient.last_url_error):
                     print "Error: Not authorised. Check your API key."
@@ -159,21 +159,21 @@ class CkanLoader(object):
                 else:
                     raise Exception, "Error: CKAN request didn't work at all."
             elif self.ckanclient.last_status == 404 or '404' in str(self.ckanclient.last_url_error):
-                print "Package '%s' not currently registered" % package['name']
+                print "Dataset '%s' not currently registered" % dataset['name']
                 print ""
-                pprint.pprint(package)
+                pprint.pprint(dataset)
                 print ""
                 if not self.options.no_create_confimation:
-                    answer = raw_input("Do you want to register this package with CKAN now? [y/N] ")
+                    answer = raw_input("Do you want to register this dataset with CKAN now? [y/N] ")
                     if not answer or answer.lower()[0] != 'y':
-                        print "Skipping '%s' package..." % package['name']
+                        print "Skipping '%s' dataset..." % dataset['name']
                         print ""
                         sleep(1)
                         continue
-                print "Registering package..."
-                self.ckanclient.package_register_post(package)
+                print "Registering dataset..."
+                self.ckanclient.dataset_register_post(dataset)
                 if self.ckanclient.last_status in [200, 201]:
-                    print "Registered package '%s' OK." % package['name']
+                    print "Registered dataset '%s' OK." % dataset['name']
                     sleep(1)
                 elif self.ckanclient.last_status == 403 or '403' in str(self.ckanclient.last_url_error):
                     print "Error: Not authorised. Check your API key."
@@ -208,35 +208,35 @@ class CkanLoader(object):
             else:
                 raise Exception, "Error: CKAN request didn't work at all."
 
-    def create_package(self, name, title='', url='', maintainer='', 
+    def create_dataset(self, name, title='', url='', maintainer='', 
             maintainer_email='', author='', author_email='', notes='', 
             tags=[], extras={}, license_id=None, license=None, resources=[]):
-        """Returns a CKAN REST API package from method arguments."""
+        """Returns a CKAN REST API dataset from method arguments."""
         if not isinstance(tags, list):
-            raise Exception, "Package tags must be a list: %s" % tags
+            raise Exception, "Dataset tags must be a list: %s" % tags
         if not isinstance(extras, dict):
-            raise Exception, "Package extras must be a dict: %s" % tags
-        package = {}
-        package['name'] = self.coerce_package_name(name)
-        package['title'] = title
-        package['url'] = url
-        package['notes'] = notes
-        package['maintainer'] = maintainer
-        package['maintainer_email'] = maintainer_email
-        package['author'] = author
-        package['author_email'] = author_email
-        package['tags'] = tags
-        package['extras'] = extras
+            raise Exception, "Dataset extras must be a dict: %s" % tags
+        dataset = {}
+        dataset['name'] = self.coerce_dataset_name(name)
+        dataset['title'] = title
+        dataset['url'] = url
+        dataset['notes'] = notes
+        dataset['maintainer'] = maintainer
+        dataset['maintainer_email'] = maintainer_email
+        dataset['author'] = author
+        dataset['author_email'] = author_email
+        dataset['tags'] = tags
+        dataset['extras'] = extras
         # Pre and post licenses servicization.
         if license_id != None:
-            package['license_id'] = license_id
+            dataset['license_id'] = license_id
         elif license != None:
-            package['license'] = license
-        package['resources'] = resources
-        return package
+            dataset['license'] = license
+        dataset['resources'] = resources
+        return dataset
 
-    def coerce_package_name(self, name):
-        """Converts unicode string to valid CKAN package name."""
+    def coerce_dataset_name(self, name):
+        """Converts unicode string to valid CKAN dataset name."""
         # Todo: Probably needs to be finished off.
         name = self.substitute_ascii_equivalents(name)
         name = name.lower()
@@ -290,7 +290,7 @@ class CkanLoader(object):
                 r += str(i)
         return r
 
-    def create_package_resource(self, url='', format='', hash='', description=''):
+    def create_dataset_resource(self, url='', format='', hash='', description=''):
         return {
             'url': url,
             'format': format,
@@ -301,7 +301,7 @@ class CkanLoader(object):
 
 class AbstractGoogleSpreadsheetLoader(CkanLoader):
     """
-    Obtains packages from a Google spreadsheet and puts them on CKAN.
+    Obtains datasets from a Google spreadsheet and puts them on CKAN.
     """
 
     def __init__(self):
@@ -325,32 +325,32 @@ class AbstractGoogleSpreadsheetLoader(CkanLoader):
             dest='google_password',
             help="""A Google account password for the email address.""")
 
-    def obtain_packages(self):
-        """Obtains packages from a Google spreadsheet."""
+    def obtain_datasets(self):
+        """Obtains datasets from a Google spreadsheet."""
         self.read_spreadsheet()
-        self.convert_cells_to_packages()
+        self.convert_cells_to_datasets()
 
     def read_spreadsheet(self):
         """Obtains cells from a Google spreadsheet."""
         print "Reading Google spreadsheet. Please wait..."
         self.cells = self.spreadsheet.get_cells()
 
-    def convert_cells_to_packages(self):
-        """Abstract method for inferring CKAN packages from dict of cells."""
+    def convert_cells_to_datasets(self):
+        """Abstract method for inferring CKAN datasets from dict of cells."""
         raise Exception, "Abstract method not implemented."
 
 
 class SimpleGoogleSpreadsheetLoader(AbstractGoogleSpreadsheetLoader):
     """
-    Obtains packages from a "simple" Google spreadsheet and puts them on CKAN.
+    Obtains datasets from a "simple" Google spreadsheet and puts them on CKAN.
     """
     #Todo: More about what a "simple" spreadsheet consists of.
 
     HEADING_ROW_POSN = 0
     FIRST_ENTITY_ROW_POSN = 1
 
-    def convert_cells_to_packages(self):
-        """Infers CKAN packages from "simple" spreadsheet structure."""
+    def convert_cells_to_datasets(self):
+        """Infers CKAN datasets from "simple" spreadsheet structure."""
         # Discover working area.
         coords = self.cells.keys()
         coords.sort()
@@ -392,22 +392,22 @@ class SimpleGoogleSpreadsheetLoader(AbstractGoogleSpreadsheetLoader):
             for j, value in enumerate(raw_entity):
                 key = self.headings[j]
                 entity[key] = value.strip()
-        print "There are %s entities: %s" % (len(self.entities), ", ".join([self.coerce_package_name(e[self.headings[0]]) for e in self.entities]))
-        # Construct packages.
+        print "There are %s entities: %s" % (len(self.entities), ", ".join([self.coerce_dataset_name(e[self.headings[0]]) for e in self.entities]))
+        # Construct datasets.
         for entity in self.entities:
             # Why do we pop empty string?
             # Allow for case where '' not there
             if '' in entity:
                 entity.pop('')
-            package = self.entity_to_package(entity)
-            if package:
-                self.packages.append(package)
-        print "There are %s metadata packages with titles extracted from the spreadsheet." % len(self.packages)
+            dataset = self.entity_to_dataset(entity)
+            if dataset:
+                self.datasets.append(dataset)
+        print "There are %s metadata datasets with titles extracted from the spreadsheet." % len(self.datasets)
 
-    def entity_to_package(self, entity):
-        """Makes a CKAN package from "simple" spreadsheet entity."""
+    def entity_to_dataset(self, entity):
+        """Makes a CKAN dataset from "simple" spreadsheet entity."""
         if 'name' in entity:
-            package = self.create_package(
+            dataset = self.create_dataset(
                 name=entity.pop('name'),
                 title=entity.pop('title', ''),
                 url=entity.pop('url', ''),
@@ -421,7 +421,7 @@ class SimpleGoogleSpreadsheetLoader(AbstractGoogleSpreadsheetLoader):
                 extras=entity,
             )
         else:
-            package = None
-        return package
+            dataset = None
+        return dataset
 
 

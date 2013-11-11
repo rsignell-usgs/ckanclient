@@ -20,8 +20,8 @@ def main():
     args = parser.parse_args()
     client = ckanclient.CkanClient(args.url)
     rows = []
-    for pkg_name in client.package_register_get():
-        pkg = client.package_entity_get(pkg_name)
+    for pkg_name in client.dataset_register_get():
+        pkg = client.dataset_entity_get(pkg_name)
         for extra, value in pkg.get('extras', {}).items():
             pkg['extras_' + extra] = value
         if 'extras' in pkg:

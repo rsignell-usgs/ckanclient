@@ -34,7 +34,7 @@ v0.8 2011-07-20
 v0.7 2011-01-27
 ---------------
 
-  * Package search returns results as a generator
+  * Dataset search returns results as a generator
     (rather than a list that needs to be paged)
   
 
@@ -48,7 +48,7 @@ v0.4 2010-10-07
 ---------------
 
   * Form API added
-  * Package name editing
+  * Dataset name editing
   * Groups added
   * Output can be verbose and use logger
   * Query API version
@@ -59,8 +59,8 @@ v0.3 2010-04-28
 ---------------
 
   * General usability improvements especially around error messages. 
-  * Package Relationships added
-  * Package deletion fixed
+  * Dataset Relationships added
+  * Dataset deletion fixed
   * Changeset entities added
   * Improved httpauth (thanks to will waites)
 
@@ -69,8 +69,8 @@ v0.2 2009-11-05
 ---------------
 
   * Search API support added
-  * Improved package support to include additional fields such as 'extras'
-  * Support tag and group entities in addition to package
+  * Improved dataset support to include additional fields such as 'extras'
+  * Support tag and group entities in addition to dataset
   * Compatibility changes: CkanClient base_location (now should point to base
     api e.g. http://ckan.net/api rather than http://ckan.net/api/rest)
 
@@ -78,4 +78,4 @@ v0.2 2009-11-05
 v0.1 2008-04
 ------------
 
-  * Fully functional implementation for REST interface to packages
+  * Fully functional implementation for REST interface to datasets

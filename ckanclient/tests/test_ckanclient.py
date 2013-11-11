@@ -39,11 +39,11 @@ class TestCkanClient(CkanServerCase):
         self._stop_ckan_server(self.pid)
 
     def delete_relationships(self):
-        res = self.c.package_relationship_register_get('annakarenina')
+        res = self.c.dataset_relationship_register_get('annakarenina')
         if self.c.last_status == 200:
             if self.c.last_message:
                 for rel_dict in self.c.last_message:
-                    self.c.package_relationship_entity_delete( \
+                    self.c.dataset_relationship_entity_delete( \
                         rel_dict['subject'],
                         rel_dict['type'],
                         rel_dict['object'])
@@ -54,19 +54,19 @@ class TestCkanClient(CkanServerCase):
         search_base = self.test_base_location + '/search'
         url = self.c.get_location('Base')
         assert url == self.test_base_location, url
-        url = self.c.get_location('Package Register')
-        assert url == rest_base + '/package'
-        url = self.c.get_location('Package Entity', 'myname')
-        assert url == rest_base + '/package/myname'
-        url = self.c.get_location('Package Entity', 'myname',
+        url = self.c.get_location('Dataset Register')
+        assert url == rest_base + '/dataset'
+        url = self.c.get_location('Dataset Entity', 'myname')
+        assert url == rest_base + '/dataset/myname'
+        url = self.c.get_location('Dataset Entity', 'myname',
                                   'relationships')
-        assert url == rest_base + '/package/myname/relationships'
-        url = self.c.get_location('Package Entity', 'myname',
+        assert url == rest_base + '/dataset/myname/relationships'
+        url = self.c.get_location('Dataset Entity', 'myname',
                                   'relationships', 'name2')
-        assert url == rest_base + '/package/myname/relationships/name2'
-        url = self.c.get_location('Package Entity', 'myname',
+        assert url == rest_base + '/dataset/myname/relationships/name2'
+        url = self.c.get_location('Dataset Entity', 'myname',
                                   'child_of', 'name2')
-        assert url == rest_base + '/package/myname/child_of/name2'
+        assert url == rest_base + '/dataset/myname/child_of/name2'
         url = self.c.get_location('Group Register')
         assert url == rest_base + '/group'
         url = self.c.get_location('Group Entity', 'myname')
@@ -77,8 +77,8 @@ class TestCkanClient(CkanServerCase):
         assert url == rest_base + '/tag/myname'
         url = self.c.get_location('Tag Entity', 'myname')
         assert url == rest_base + '/tag/myname'
-        url = self.c.get_location('Package Search')
-        assert url == search_base + '/package'
+        url = self.c.get_location('Dataset Search')
+        assert url == search_base + '/dataset'
 
     def test_02_get_api_version(self):
         version = self.c.api_version_get()
@@ -88,8 +88,8 @@ class TestCkanClient(CkanServerCase):
         assert 'version' in body, body
         assert int(version) > 0, version
 
-    def test_03_package_register_get(self):
-        self.c.package_register_get()
+    def test_03_dataset_register_get(self):
+        self.c.dataset_register_get()
         status = self.c.last_status
         assert status == 200
         body = self.c.last_body
@@ -97,9 +97,9 @@ class TestCkanClient(CkanServerCase):
         assert type(self.c.last_message) == list
         assert 'annakarenina' in self.c.last_message
 
-    def test_04_package_entity_get(self):
+    def test_04_dataset_entity_get(self):
         # Check registered entity is found.
-        self.c.package_entity_get('annakarenina')
+        self.c.dataset_entity_get('annakarenina')
         status = self.c.last_status
         assert status == 200, status
         body = self.c.last_body
@@ -110,10 +110,10 @@ class TestCkanClient(CkanServerCase):
         assert message['name'] == u'annakarenina'
         assert message['title'] == u'A Novel By Tolstoy'
 
-    def test_05_package_entity_get_404(self):
+    def test_05_dataset_entity_get_404(self):
         # Check unregistered entity is not found.
         assert_raises(CkanApiError,
-                      self.c.package_entity_get,
+                      self.c.dataset_entity_get,
                       'mycoffeecup')
         status = self.c.last_status
         assert status == 404, status
@@ -126,27 +126,27 @@ class TestCkanClient(CkanServerCase):
         pkg_name += timestr
         return pkg_name
 
-    def test_06_package_register_post(self):
+    def test_06_dataset_register_post(self):
         pkg_name = self._generate_pkg_name()
-        # Check package isn't registered.
+        # Check dataset isn't registered.
         assert_raises(CkanApiError,
-                      self.c.package_entity_get, pkg_name)
+                      self.c.dataset_entity_get, pkg_name)
         status = self.c.last_status
         assert status == 404, status
-        # Check registration of new package.
-        package = {
+        # Check registration of new dataset.
+        dataset = {
             'name': pkg_name,
             'url': 'orig_url',
             'download_url': 'orig_download_url',
             'tags': ['russian', 'newtag'],
             'extras': {'genre':'thriller', 'format':'ebook'},
         }
-        self.c.package_register_post(package)
+        self.c.dataset_register_post(dataset)
         status = self.c.last_status
         assert status == 201, status
 
-        # Check package is registered.
-        self.c.package_entity_get(pkg_name)
+        # Check dataset is registered.
+        self.c.dataset_entity_get(pkg_name)
         status = self.c.last_status
         assert status == 200, status
         message = self.c.last_message
@@ -162,37 +162,37 @@ class TestCkanClient(CkanServerCase):
         # order out is not guaranteed
         assert set(tags) == set(['newtag', 'russian']), tags
         extras = message['extras']
-        assert extras == package['extras']
+        assert extras == dataset['extras']
                     
 
-    def test_07_package_entity_put(self):
-        # Register new package.
+    def test_07_dataset_entity_put(self):
+        # Register new dataset.
         pkg_name_test_07 = self._generate_pkg_name()
-        package = {
+        dataset = {
             'name': pkg_name_test_07,
             'url': 'orig_url',
             'download_url': 'orig_download_url',
             'tags': ['russian'],
         }
-        self.c.package_register_post(package)
+        self.c.dataset_register_post(dataset)
         status = self.c.last_status
         assert status == 201, status
 
-        # Check update of existing package.
+        # Check update of existing dataset.
         mytag = 'mytag' + pkg_name_test_07
-        package = {
+        dataset = {
             'name': pkg_name_test_07,
             'url': 'new_url',
             'download_url': 'new_download_url',
             'tags': ['russian', 'tolstoy', mytag],
             'extras': {'genre':'thriller', 'format':'ebook'},
         }
-        self.c.package_entity_put(package)
+        self.c.dataset_entity_put(dataset)
         status = self.c.last_status
         assert status == 200
 
-        # Check package is updated.
-        self.c.package_entity_get(pkg_name_test_07)
+        # Check dataset is updated.
+        self.c.dataset_entity_get(pkg_name_test_07)
         status = self.c.last_status
         assert status == 200, status
         message = self.c.last_message
@@ -206,30 +206,30 @@ class TestCkanClient(CkanServerCase):
         # order out is not guaranteed
         assert set(tags) == set(['russian', 'tolstoy', mytag]), tags
         extras = message['extras']
-        assert extras == package['extras']
+        assert extras == dataset['extras']
 
 
-    def test_08_package_entity_delete(self):
-        # create a package to be deleted
+    def test_08_dataset_entity_delete(self):
+        # create a dataset to be deleted
         pkg_name = self._generate_pkg_name()
-        self.c.package_register_post({'name': pkg_name})
+        self.c.dataset_register_post({'name': pkg_name})
         status = self.c.last_status
         assert status == 201, status        
 
         # check it is readable
-        self.c.package_entity_get(pkg_name)
+        self.c.dataset_entity_get(pkg_name)
         assert self.c.last_status == 200, self.c.last_status
 
         # delete it
-        self.c.package_entity_delete(pkg_name)
+        self.c.dataset_entity_delete(pkg_name)
 
         # see it is not readable by another user
         assert_raises(CkanApiError,
-                      self.c2.package_entity_get, pkg_name)
+                      self.c2.dataset_entity_get, pkg_name)
         assert self.c2.last_status == 403, self.c.last_status
 
         # see it is still readable by the author (therefore pkg admin)
-        self.c.package_entity_get(pkg_name)
+        self.c.dataset_entity_get(pkg_name)
         assert self.c.last_status == 200, self.c.last_status
 
     def test_09_tag_register_get(self):
@@ -242,14 +242,14 @@ class TestCkanClient(CkanServerCase):
         assert 'russian' in self.c.last_message
 
     def test_10_pkg_search_basic(self):
-        res = self.c.package_search('Novel')
+        res = self.c.dataset_search('Novel')
         status = self.c.last_status
         assert status == 200, status
         assert_equal(list(res['results']), [u'annakarenina'])
         assert_equal(res['count'], 1)
 
     def test_10_pkg_search_paged(self):
-        res = self.c.package_search('russian', search_options={'limit': 1})
+        res = self.c.dataset_search('russian', search_options={'limit': 1})
         status = self.c.last_status
         assert status == 200, status
         all_results = list(res['results'])
@@ -257,39 +257,39 @@ class TestCkanClient(CkanServerCase):
         assert res['count'] >= 2, '%r %r' % (res, all_results)
 
     def test_10_pkg_search_options(self):
-        res = self.c.package_search(None, search_options={'groups': 'roger'})
+        res = self.c.dataset_search(None, search_options={'groups': 'roger'})
         status = self.c.last_status
         assert status == 200, status
         assert_equal(list(res['results']), [u'annakarenina'])
         assert_equal(res['count'], 1)
 
     def test_10_pkg_search_options_all_fields(self):
-        res = self.c.package_search(None, search_options={'groups': 'roger',
+        res = self.c.dataset_search(None, search_options={'groups': 'roger',
                                                           'all_fields': True})
         status = self.c.last_status
         assert status == 200, status
         assert_equal(res['count'], 1)
         assert_equal(list(res['results'])[0]['name'], u'annakarenina')
 
-    def test_11_package_relationship_post(self):
-        res = self.c.package_relationship_register_get('annakarenina')
+    def test_11_dataset_relationship_post(self):
+        res = self.c.dataset_relationship_register_get('annakarenina')
         assert self.c.last_status == 200, self.c.last_status
         assert not self.c.last_message, self.c.last_body
 
         # create relationship
-        res = self.c.package_relationship_entity_post('annakarenina', 'child_of', 'warandpeace', 'some comment')
+        res = self.c.dataset_relationship_entity_post('annakarenina', 'child_of', 'warandpeace', 'some comment')
         try:
             assert self.c.last_status == 201, self.c.last_status
         finally:
             self.delete_relationships()
         
-    def test_12_package_relationship_get(self):
+    def test_12_dataset_relationship_get(self):
         # create relationship
-        res = self.c.package_relationship_entity_post('annakarenina', 'child_of', 'warandpeace', 'some comment')
+        res = self.c.dataset_relationship_entity_post('annakarenina', 'child_of', 'warandpeace', 'some comment')
         
         # read relationship
         try:
-            res = self.c.package_relationship_register_get('annakarenina')
+            res = self.c.dataset_relationship_register_get('annakarenina')
             assert self.c.last_status == 200, self.c.last_status
             rels = self.c.last_message
             assert len(rels) == 1, rels
@@ -300,16 +300,16 @@ class TestCkanClient(CkanServerCase):
         finally:
             self.delete_relationships()
 
-    def test_13_package_relationship_put(self):
+    def test_13_dataset_relationship_put(self):
         # create relationship
-        res = self.c.package_relationship_entity_post('annakarenina', 'child_of', 'warandpeace', 'some comment')
+        res = self.c.dataset_relationship_entity_post('annakarenina', 'child_of', 'warandpeace', 'some comment')
         # update relationship
         try:
-            res = self.c.package_relationship_entity_put('annakarenina', 'child_of', 'warandpeace', 'new comment')
+            res = self.c.dataset_relationship_entity_put('annakarenina', 'child_of', 'warandpeace', 'new comment')
             assert self.c.last_status == 200, self.c.last_status
 
             # read relationship
-            res = self.c.package_relationship_register_get('annakarenina')
+            res = self.c.dataset_relationship_register_get('annakarenina')
             assert self.c.last_status == 200, self.c.last_status
             rels = self.c.last_message
             assert len(rels) == 1, rels
@@ -317,27 +317,27 @@ class TestCkanClient(CkanServerCase):
         finally:
             self.delete_relationships()
 
-    def test_14_package_relationship_delete(self):
+    def test_14_dataset_relationship_delete(self):
         # create relationship
-        res = self.c.package_relationship_entity_post('annakarenina', 'child_of', 'warandpeace', 'some comment')
+        res = self.c.dataset_relationship_entity_post('annakarenina', 'child_of', 'warandpeace', 'some comment')
         try:
-            self.c.package_relationship_entity_delete('annakarenina',
+            self.c.dataset_relationship_entity_delete('annakarenina',
                                                       'child_of', 'warandpeace')
 
             # read relationship gives 404
             assert_raises(CkanApiError,
-                          self.c.package_relationship_register_get,
+                          self.c.dataset_relationship_register_get,
                           'annakarenina', 'child_of', 'warandpeace')
             assert self.c.last_status == 404, self.c.last_status
 
             # and register of relationships is blank
-            res = self.c.package_relationship_register_get('annakarenina', 'relationships', 'warandpeace')
+            res = self.c.dataset_relationship_register_get('annakarenina', 'relationships', 'warandpeace')
             assert self.c.last_status == 200, self.c.last_status
             assert not res, res
         finally:
             self.delete_relationships()
 
-    def test_15_package_edit_form_get(self):
+    def test_15_dataset_edit_form_get(self):
         try:
             import ckanext.dgu
         except exceptions.ImportError, e:
@@ -345,7 +345,7 @@ class TestCkanClient(CkanServerCase):
         if 'dgu_form_api' not in config.get('ckan.plugins', ''):
             raise SkipTest('Need dgu_form_api plugin (from ckanext-dgu) enabled to test form api client.')
             
-        res = self.c.package_edit_form_get('annakarenina')
+        res = self.c.dataset_edit_form_get('annakarenina')
         assert self.c.last_status == 200, self.c.last_status
         assert res, res
         
@@ -356,12 +356,12 @@ class TestCkanClient(CkanServerCase):
         david = self.c.group_entity_get('david')
         for expected_key in ('name', 'id', 'title', 'created', 'description'):
             assert expected_key in david, david
-        assert set(david['packages']) == set((u'annakarenina', u'warandpeace')), david
+        assert set(david['datasets']) == set((u'annakarenina', u'warandpeace')), david
         roger = self.c.group_entity_get('roger')
-        assert roger['packages'] == [u'annakarenina'], roger
+        assert roger['datasets'] == [u'annakarenina'], roger
 
-    def test_17_package_list(self):
-        res = self.c.package_list()
+    def test_17_dataset_list(self):
+        res = self.c.dataset_list()
         status = self.c.last_status
         assert status == 200
         assert_equal(res, self.c.last_result)

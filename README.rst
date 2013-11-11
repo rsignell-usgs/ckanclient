@@ -67,37 +67,37 @@ The simplest way to make CKAN API requests is::
                                  api_key='adbc-1c0d')
     # (use your own api_key from http://datahub.io/user/me )
 
-    # Get the package list.
-    package_list = ckan.package_register_get()
-    print package_list
+    # Get the dataset list.
+    dataset_list = ckan.dataset_register_get()
+    print dataset_list
 
     # Get the tag list.
     tag_list = ckan.tag_register_get()
     print tag_list
 
-    # Collect the package metadata.
-    package_entity = {
-        'name': my_package_name,
-        'url': my_package_url,
-        'download_url': my_package_download_url,
-        'tags': my_package_keywords,
-        'notes': my_package_long_description,
+    # Collect the dataset metadata.
+    dataset_entity = {
+        'name': my_dataset_name,
+        'url': my_dataset_url,
+        'download_url': my_dataset_download_url,
+        'tags': my_dataset_keywords,
+        'notes': my_dataset_long_description,
     }
 
-    # Register the package.
-    ckan.package_register_post(package_entity)
+    # Register the dataset.
+    ckan.dataset_register_post(dataset_entity)
 
-    # Get the details of a package.
-    ckan.package_entity_get(package_name)
-    package_entity = ckan.last_message
-    print package_entity
+    # Get the details of a dataset.
+    ckan.dataset_entity_get(dataset_name)
+    dataset_entity = ckan.last_message
+    print dataset_entity
 
-    # Update the details of a package.
-    ckan.package_entity_get(package_name)
-    package_entity = ckan.last_message
-    package_entity['url'] = new_package_url
-    package_entity['notes'] = new_package_notes
-    ckan.package_entity_put(package_entity)
+    # Update the details of a dataset.
+    ckan.dataset_entity_get(dataset_name)
+    dataset_entity = ckan.last_message
+    dataset_entity['url'] = new_dataset_url
+    dataset_entity['notes'] = new_dataset_notes
+    ckan.dataset_entity_put(dataset_entity)
 
     # List groups
     group_list = ckan.group_register_get()
@@ -108,7 +108,7 @@ The simplest way to make CKAN API requests is::
         'name': my_group_name,
         'title': my_group_title,
         'description': my_group_description,
-        'packages': group_package_names,
+        'datasets': group_dataset_names,
         }
     ckan.group_register_post(group_entity)
 
@@ -118,7 +118,7 @@ The simplest way to make CKAN API requests is::
     # Update the group details
     group_entity = ckan.last_message
     group_entity['title'] = new_group_title
-    group_entity['packages'] = new_group_packages
+    group_entity['datasets'] = new_group_datasets
     ckan.group_entity_put(group_entity)
 
 FileStore and Storage API
@@ -131,9 +131,9 @@ example::
     ckan = ckanclient.CkanClient(base_location='http://datahub.io/api',
         api_key='aa9368b2-6f18-4c96-b190-4f3355613d88')
     ckan.upload_file('my_data.csv')
-    ckan.add_package_resource('my_dataset', 'my_data_file.csv',
+    ckan.add_dataset_resource('my_dataset', 'my_data_file.csv',
                 resource_type='data', description='...')
-    ckan.add_package_resource('my_dataset', 'http://example.org/foo.txt',
+    ckan.add_dataset_resource('my_dataset', 'http://example.org/foo.txt',
                 name='Foo', resource_type='metadata', format='csv')
 
 DataStore and Data API
@@ -152,11 +152,11 @@ Install ckanclient will create a command line client named (unsurprisingly!)
 
 Example::
 
-    ckanclient package_entity_get ckan
+    ckanclient dataset_entity_get ckan
 
 You can specify the ckan site you wish to use using the --ckan option::
 
-    ckanclient --ckan=http://datahub.io/api package_entity_get ckan
+    ckanclient --ckan=http://datahub.io/api dataset_entity_get ckan
 
 NB: the command line is currently under development.
 
